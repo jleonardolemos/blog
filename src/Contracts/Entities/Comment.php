@@ -2,15 +2,15 @@
 
 namespace Llemos\Blog\Contracts\Entities;
 
-interface Post extends Carbonic
+interface Comment extends Carbonic
 {
     public function setUserId(string $userId) : void;
 
     public function getUserId() : string;
 
-    public function setTitle(string $title) : void;
+    public function setPostId(string $postId) : void;
 
-    public function getTitle() : string;
+    public function getPostId() : string;
 
     public function setBody(string $body) : void;
 
