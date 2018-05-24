@@ -3,6 +3,7 @@
 namespace Llemos\Blog\Entities;
 
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Llemos\Blog\Contracts\Entities\Post as PostEntity;
 use Llemos\Blog\Contracts\Entities\Hydratable;
 
@@ -15,9 +16,10 @@ class Post implements PostEntity, Hydratable
     }
 
     protected $id;
-    protected $title;
     protected $body;
+    protected $title;
     protected $userId;
+    protected $comments;
     protected $created_at;
     protected $updated_at;
 
@@ -62,6 +64,16 @@ class Post implements PostEntity, Hydratable
         return $this->body;
     }
 
+    public function setComments(Collection $comments = null) : void
+    {
+        $this->comments = $comments;
+    }
+
+    public function getComments() : Collection
+    {
+        return $this->comments;
+    }
+
     public function setCreatedAt(Carbon $createdAt) : void
     {
         $this->created_at = $createdAt;
@@ -91,7 +103,7 @@ class Post implements PostEntity, Hydratable
             'user_id' => $this->getUserId(),
             'created_at' => $this->getCreatedAt()->toDateTimeString(),
             'updated_at' => $this->getUpdatedAt()->toDateTimeString()
-        ];
+        ] + ($this->comments ? ['comments' => $this->comments->toArray()] : []);
     }
 
     public function hydrate(array $data) : void
@@ -104,5 +116,13 @@ class Post implements PostEntity, Hydratable
             && $this->setCreatedAt(Carbon::createFromTimeString($data['created_at']));
         (isset($data['updated_at']) && $data['updated_at'])
             && $this->setUpdatedAt(Carbon::createFromTimeString($data['updated_at']));
+
+        if (isset($data['comments']) && is_array($data['comments'])) {
+            $this->setComments(
+                collect(array_map(function ($comment) use ($data) {
+                    return new Comment($comment);
+                }, $data['comments']))
+            );
+        }
     }
 }
